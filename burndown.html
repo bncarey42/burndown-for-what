@@ -3,13 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <title>burndown</title>
-  <script src='Actual.js'>
+  <script>
+    taskHourTotal = 210 // <<<<<<<<<<<<<<<<<<<<<<< INPUT TOTAL SPRINT TASK HOURS HERE
+
+    DailyTaskHour = {
+      total:taskHourTotal,
+      data:[taskHourTotal, //WED 1 <<<<<<<<<<<<<<<<<<<<<<< INPUT DAILY TASK HOURS FOLLOWED BY A COMMA INTO THIS ARRAY
+            NaN,               //THU 1
+            NaN,               //FRI 1
+                            //MON 1
+                            //TUE 1
+                            //WED 2
+                           //THU 2
+                          //FRI 2
+                           //MON 2
+                           //TUE 2
+            ]
+    }
+
+    projectedSlope = (0-taskHourTotal)/(9-0) //(y[2]-y[1])/(x[2]-x[1])
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 </head>
-<body>
-  <input type="number" id="task_hours" /> <button onclick="newActual()">update task hours</button>
-  <canvas id="myChart"></canvas>
-  <script src="burndown.js"></script>
+<body onload='getTodaysOffset()' style='text-align: center; font-family:  Roboto, Helvetica, Arial sans-serif'>
+  <div style='width:85%; margin-left: 5%; margin-right: 5%;'> 
+    <canvas id="myChart"></canvas>
+  </div>
+  <div id='offsetHours'></div>
+  <script>
+    Chart.defaults.line.spanGaps = true;
+
+    var contx = document.getElementById("myChart").getContext('2d');
+    var myChart = new Chart(contx, {
+      type: 'line',
+      data: {
+        labels: ['Wed (offset = ' + calcDiff(0).toFixed(2) + ')',  //WED 1
+                 'Thu (offset = ' + calcDiff(1).toFixed(2) + ')',  //THU 1
+                 'Fri (offset = ' + calcDiff(2).toFixed(2) + ')',  //FRI 1
+                 'Mon (offset = ' + calcDiff(3).toFixed(2) + ')',  //MON 1
+                 'Tue (offset = ' + calcDiff(4).toFixed(2) + ')',  //TUE 1
+                 'Wed (offset = ' + calcDiff(5).toFixed(2) + ')',  //WED 2
+                 'Thu (offset = ' + calcDiff(6).toFixed(2) + ')',  //THU 2
+                 'Fri (offset = ' + calcDiff(7).toFixed(2) + ')',  //FRI 2
+                 'Mon (offset = ' + calcDiff(8).toFixed(2) + ')',  //MON 2
+                 'Tue (offset = ' + calcDiff(9).toFixed(2) + ')',  //TUE 2
+               ],
+        datasets: [{
+          label: 'Projected',
+          data: [ taskHourTotal,  //WED 1
+                  getY(1),        //THU 1
+                  getY(2),        //FRI 1
+                  getY(3),        //MON 1
+                  getY(4),        //TUE 1
+                  getY(5),        //WED 2
+                  getY(6),        //THU 2
+                  getY(7),        //FRI 2
+                  getY(8),        //MON 2
+                  0               //TUE 2
+                ],
+          fill: true,
+          
+          backgroundColor: '#009637a5'
+        }, {
+          label: 'Actual',
+          data: DailyTaskHour.data,
+          backgroundColor: '#420001'
+        }]
+      },
+      // Configuration options go here
+      options: {}
+    });
+
+    function calcDiff(x) {
+      //diff = current actual - TheLine's Y 
+      return Number(DailyTaskHour.data[x]) - Number(getY(x))
+    }
+
+    function getY(x) {
+      //y = mx+b
+      //m = slope x = known x b= y intercept(where line crosses y)
+      return Number(projectedSlope) * Number(x) + Number(taskHourTotal)
+    }
+
+    function getTodaysOffset() {
+      var day = DailyTaskHour.data.length
+      var todaysDiff = calcDiff(day - 1)
+      var offsettext = document.createElement('h1')
+      var dailyDiff = Number(getY(day-1)) - Number(getY(day))
+      console.log(todaysDiff + " + " + dailyDiff + " = " + (todaysDiff+dailyDiff))
+      offsettext.appendChild(document.createTextNode('Daily Offset: ' + todaysDiff.toFixed(2) + 
+        (todaysDiff >= 0 ? ' | Points to catch up for tomorrow: ' + (todaysDiff + dailyDiff).toFixed(2) : ' | Good job!')))
+      offsettext.setAttribute('style', todaysDiff >= 0 ? 'color:#420001;':'color:#009637;')
+      document.getElementById('offsetHours').appendChild(offsettext)
+    }
+ 
+  </script>
 </body>
 </html>
